@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Upload Receipt</title>
+    <style>
+        /* Set background image */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-image: url('images/background.jpg');
+            background-size: cover; /* Make it cover the whole screen */
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Center the form and make it readable */
+        .form-container {
+            background: rgba(255, 255, 255, 0.8); /* Slight white overlay for readability */
+            padding: 20px 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h2>Upload Receipt</h2>
+    <form id="uploadForm">
+        <input type="file" name="file" id="file" accept="image/*" required />
+        <br>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+
+<script>
+    (function () {
+        var form = document.getElementById("uploadForm");
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var fileInput = document.getElementById("file");
+            if (!fileInput.files.length) {
+                alert("Please select a file.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            fetch("/api/receipt/upload", {
+                method: "POST",
+                body: formData,
+            })
+                .then(function (resp) {
+                    return resp.json().then(function (data) {
+                        return { resp: resp, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (result.resp.ok && result.data && result.data.id) {
+                        window.location.href =
+                            "map.html?id=" + encodeURIComponent(result.data.id);
+                    } else {
+                        alert("Upload failed: " + JSON.stringify(result.data || {}));
+                    }
+                })
+                .catch(function (err) {
+                    console.error(err);
+                    alert("Error uploading file");
+                });
+        });
+    })();
+</script>
+</body>
+</html>
